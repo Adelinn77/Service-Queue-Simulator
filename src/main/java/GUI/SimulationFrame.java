@@ -1,4 +1,6 @@
 package GUI;
 
-public class SimulationFrame {
+import javax.swing.*;
+
+public class SimulationFrame extends JFrame {
 }

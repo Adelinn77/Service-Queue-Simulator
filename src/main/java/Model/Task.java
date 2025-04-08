@@ -5,8 +5,11 @@ public class Task {
     private int arrivalTime;
     private int serviceTime;
 
-    public Task() {
-        //
+    public Task() {}
+    public Task(int ID, int arrivalTime, int serviceTime) {
+        this.ID = ID;
+        this.arrivalTime = arrivalTime;
+        this.serviceTime = serviceTime;
     }
 
     public int getArrivalTime() {

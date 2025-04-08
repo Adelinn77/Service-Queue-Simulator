@@ -16,6 +16,12 @@ public class Scheduler {
         this.maxNoServers = maxNoServers;
         this.maxTasksPerServer = maxTasksPerServer;
         this.servers = new ArrayList<Server>();
+        for(int i = 0; i < maxNoServers; i++) {
+            Server server = new Server();
+            Thread thread = new Thread(server);
+            thread.start();
+            servers.add(server);
+        }
     }
 
 
@@ -23,13 +29,13 @@ public class Scheduler {
         if(policy == SelectionPolicy.SHORTEST_QUEUE){
             //strategy = new ConcreteStrategyQueue();
         }
-        if(policy == SelectionPolicy.SHORTEST_TIME){
+        else if(policy == SelectionPolicy.SHORTEST_TIME){
             //strategy = new ConcreteStrategyTime();
         }
     }
 
-    public void dispatchTask(Task task) {
-
+    public void dispatchTask(Task t) {
+        strategy.addTask(servers, t);
     }
 
     public  List<Server> getServers() {
