@@ -35,4 +35,16 @@ public class Task {
     public void setID(int ID) {
         this.ID = ID;
     }
+
+    public boolean isPoisonPill() {
+        return this.getID() == -1;
+    }
+
+    @Override
+    public String toString() {
+        return "(" + ID +
+                ", " + arrivalTime +
+                ", " + serviceTime +
+                ')';
+    }
 }

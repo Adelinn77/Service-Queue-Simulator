@@ -27,10 +27,10 @@ public class Scheduler {
 
     public void changeStrategy(SelectionPolicy policy) {
         if(policy == SelectionPolicy.SHORTEST_QUEUE){
-            //strategy = new ConcreteStrategyQueue();
+            strategy = new ConcreteStrategyQueue();
         }
         else if(policy == SelectionPolicy.SHORTEST_TIME){
-            //strategy = new ConcreteStrategyTime();
+            strategy = new ConcreteStrategyTime();
         }
     }
 
@@ -41,4 +41,11 @@ public class Scheduler {
     public  List<Server> getServers() {
         return servers;
     }
+
+    public void stopAllServers() {
+        for (Server server : servers) {
+            server.addTask(new Task(-1, 0, 0)); // Poison pill
+        }
+    }
+
 }
