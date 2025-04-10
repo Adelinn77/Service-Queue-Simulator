@@ -13,13 +13,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
 public class SimulationManager implements Runnable {
-    public int timeLimit = 10;
-    public int maxServiceTime = 3;
-    public int minServiceTime = 1;
-    public int maxArrivalTime = 6;
-    public int minArrivalTime = 1;
-    public int numberOfServers = 2;
-    public int numberOfClients = 5;
+    public int timeLimit = 200;
+    public int maxServiceTime = 9;
+    public int minServiceTime = 3;
+    public int maxArrivalTime = 100;
+    public int minArrivalTime = 10;
+    public int numberOfServers = 20;
+    public int numberOfClients = 50;
 
     public SelectionPolicy selectionPolicy = SelectionPolicy.SHORTEST_TIME;
     private Scheduler scheduler;
@@ -41,7 +41,7 @@ public class SimulationManager implements Runnable {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
         generatedTasks = generateNRandomTasks();
-
+        //generatedTasks = generateExampleTasks();
     }
 
     private List<Task> generateNRandomTasks() {
@@ -56,6 +56,15 @@ public class SimulationManager implements Runnable {
         System.out.println(tasks);
         tasks.sort(Comparator.comparingInt(Task::getArrivalTime));
         System.out.println(tasks);
+        return tasks;
+    }
+
+    private List<Task> generateExampleTasks() {
+        List<Task> tasks = new ArrayList<>();
+        tasks.add(new Task(1, 2, 2));
+        tasks.add(new Task(2, 3, 3));
+        tasks.add(new Task(3, 4, 3));
+        tasks.add(new Task(4, 10, 2));
         return tasks;
     }
 
