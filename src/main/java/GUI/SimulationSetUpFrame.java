@@ -9,7 +9,8 @@ import java.awt.event.ActionListener;
 
 public class SimulationSetUpFrame extends JFrame {
     private SimulationManager manager;
-    private JPanel contentPane = new JPanel();
+    private Image backgroundImage = new ImageIcon(getClass().getResource("/sb.png")).getImage();
+    private JPanel contentPane = new BackgroundPanel(backgroundImage);
     //inputs
     private JTextField noClientsField = new JTextField();
     private JTextField noQueuesField = new JTextField();
@@ -59,7 +60,10 @@ public class SimulationSetUpFrame extends JFrame {
         buttonPanel.add(startButton);
         contentPane.add(buttonPanel, BorderLayout.SOUTH);
         contentPane.setBackground(new Color(167, 207, 255));
+        inputPane.setOpaque(false);
+        buttonPanel.setOpaque(false);
         this.setContentPane(contentPane);
+
     }
 
     public void customizeInput() {
@@ -89,14 +93,17 @@ public class SimulationSetUpFrame extends JFrame {
         row.add(label);
         row.add(textField);
         row.setBackground(new Color(167, 207, 255));
+        row.setOpaque(false);
+
         return row;
     }
 
     public JPanel createComboBoxRow(JComboBox<String> comboBox, JLabel label){
         JPanel row = new JPanel(new GridLayout(1, 2));
-        String[] strategies = {"SHORTEST TIME", "SHORTEST QUEUE"};
+        String[] strategies = {"shortest time", "shortest queue"};
         comboBox.setModel(new DefaultComboBoxModel<>(strategies));
         row.setBackground(new Color(167, 207, 255));
+        row.setOpaque(false);
         row.add(label);
         row.add(comboBox);
         return row;
@@ -106,13 +113,13 @@ public class SimulationSetUpFrame extends JFrame {
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setVerticalAlignment(SwingConstants.CENTER);
         label.setPreferredSize(new Dimension(100, 70));
-        label.setFont(new Font("Consolas", Font.BOLD, 22));
+        label.setFont(new Font("Consolas", Font.BOLD, 24));
         label.setForeground(new Color(80, 0, 120));
         label.setBackground(new Color(167, 207, 255));
     }
 
     public void customizeInputText(JTextField textField){
-        textField.setFont(new Font("Consolas", Font.PLAIN, 18));
+        textField.setFont(new Font("Consolas", Font.BOLD, 24));
         textField.setForeground(new Color(80, 0, 120));
         textField.setBackground(Color.WHITE);
         textField.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
