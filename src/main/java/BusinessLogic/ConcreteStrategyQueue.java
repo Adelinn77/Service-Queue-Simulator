@@ -12,7 +12,7 @@ public class ConcreteStrategyQueue implements Strategy {
         Server minimumServer = null;
         for(Server server : servers) {
             if(server.getTasks().size() < minimumSize){
-                minimumSize = server.getWaitingPeriod().get();
+                minimumSize = server.getTasks().size();
                 minimumServer = server;
             }
         }

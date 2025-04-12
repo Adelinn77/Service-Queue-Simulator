@@ -1,6 +1,6 @@
 package BusinessLogic;
 
-import GUI.SimulationFrame;
+import GUI.SimulationSetUpFrame;
 import Model.Server;
 import Model.Task;
 
@@ -13,34 +13,29 @@ import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
 public class SimulationManager implements Runnable {
-    public int timeLimit = 200;
-    public int maxServiceTime = 9;
-    public int minServiceTime = 3;
-    public int maxArrivalTime = 100;
-    public int minArrivalTime = 10;
-    public int numberOfServers = 20;
-    public int numberOfClients = 50;
+    public int timeLimit = 10;
+    public int maxServiceTime = 3;
+    public int minServiceTime = 1;
+    public int maxArrivalTime = 6;
+    public int minArrivalTime = 1;
+    public int numberOfServers = 2;
+    public int numberOfClients = 6;
 
     public SelectionPolicy selectionPolicy = SelectionPolicy.SHORTEST_TIME;
     private Scheduler scheduler;
-    private SimulationFrame frame;
+    private SimulationSetUpFrame frame;
     private List<Task> generatedTasks;
-
     private BufferedWriter logWriter;
+    private boolean start = false;
 
     public SimulationManager() {
         scheduler = new Scheduler(numberOfServers, numberOfClients);
         scheduler.changeStrategy(selectionPolicy);
-        try {
-            logWriter = new BufferedWriter(new FileWriter("log.txt"));
-        } catch (IOException e) {
-            System.out.println("Error writing log file");
-            e.printStackTrace();
-        }
-        frame = new SimulationFrame("Simulation Manager");
+        frame = new SimulationSetUpFrame(this,"Simulation Manager");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
-        generatedTasks = generateNRandomTasks();
+        //generatedTasks = generateNRandomTasks();
+        setStart(false);
         //generatedTasks = generateExampleTasks();
     }
 
@@ -71,53 +66,59 @@ public class SimulationManager implements Runnable {
 
     @Override
     public void run() {
-        int currentTime = 0;
-        while(currentTime < timeLimit) {
-            Iterator<Task> iterator = generatedTasks.iterator();
-            while (iterator.hasNext()) {
-                Task task = iterator.next();
-                if (task.getArrivalTime() == currentTime) {
-                    scheduler.dispatchTask(task);
-                    iterator.remove();
-                }
-            }
-
-            log("Time " + currentTime);
-            log("Waiting clients: " + formatWaitingClients(generatedTasks));
-
-            int index = 1;
-            for (Server server : scheduler.getServers()) {
-                BlockingQueue<Task> queue = server.getTasks();
-                if (queue.isEmpty()) {
-                    log("Queue " + index + ": closed");
-                } else {
-                    log("Queue " + index + ": " + formatQueue(queue));
-                }
-                index++;
-            }
-            log("");
-            //frame.update(currentTime, scheduler.getServers(), generatedTasks);
-
-            currentTime++;
-
+        if(getStart()) {
             try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
+                logWriter = new BufferedWriter(new FileWriter("log.txt"));
+            } catch (IOException e) {
+                System.out.println("Error writing log file");
+                e.printStackTrace();
             }
+            int currentTime = 0;
+            while (currentTime <= timeLimit) {
+                Iterator<Task> iterator = generatedTasks.iterator();
+                while (iterator.hasNext()) {
+                    Task task = iterator.next();
+                    if (task.getArrivalTime() == currentTime) {
+                        scheduler.dispatchTask(task);
+                        iterator.remove();
+                    }
+                }
 
-        }
-        scheduler.stopAllServers();
-        //log("Average waiting time: " + calculateAverageWaitingTime());
-        log("The simulation is finished when there are no more clients...");
-        try {
-            logWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Simulation finished");
+                log("Time " + currentTime);
+                log("Waiting clients: " + formatWaitingClients(generatedTasks));
 
+                int index = 1;
+                for (Server server : scheduler.getServers()) {
+                    BlockingQueue<Task> queue = server.getTasks();
+                    if (queue.isEmpty()) {
+                        log("Queue " + index + ": closed");
+                    } else {
+                        log("Queue " + index + ": " + formatQueue(queue));
+                    }
+                    index++;
+                }
+                log("");
+                //frame.update(currentTime, scheduler.getServers(), generatedTasks);
+
+                currentTime++;
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+
+            }
+            scheduler.stopAllServers();
+            //log("Average waiting time: " + calculateAverageWaitingTime());
+            log("The simulation is finished when the simulation time is over.");
+            try {
+                logWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Simulation finished");
+        }
     }
 
     public int getNumberOfClients() {
@@ -177,6 +178,22 @@ public class SimulationManager implements Runnable {
         this.timeLimit = timeLimit;
     }
 
+    public boolean getStart() {
+        return start;
+    }
+
+    public void setStart(boolean start) {
+        this.start = start;
+    }
+
+    public List<Task> getGeneratedTasks() {
+        return generatedTasks;
+    }
+
+    public void setGeneratedTasks(List<Task> generatedTasks) {
+        this.generatedTasks = generatedTasks;
+    }
+
     @Override
     public String toString() {
         return "SimulationManager{" +
@@ -211,10 +228,74 @@ public class SimulationManager implements Runnable {
                 .collect(Collectors.joining("; "));
     }
 
+    public void validateInput(){
+        int noClients = -1, noQueues = -1, simTime = -1, maxATime = -1, minATime = -1, maxSTime = -1, minSTime = -1;
+        String selectionP = "";
+        try {
+            noClients = Integer.parseInt(frame.getNoClientsFieldText());
+            noQueues = Integer.parseInt(frame.getNoQueuesFieldText());
+            simTime = Integer.parseInt(frame.getSimulationTimeFieldText());
+            maxATime = Integer.parseInt(frame.getMaxArrivalTimeFieldText());
+            minATime = Integer.parseInt(frame.getMinArrivalTimeFieldText());
+            maxSTime = Integer.parseInt(frame.getMaxServiceTimeFieldText());
+            minSTime = Integer.parseInt(frame.getMinServiceTimeFieldText());
+            selectionP = frame.getSelectionPolicyItem();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "Please enter valid numbers!");
+            return;
+        }
+        boolean validIntervals = validateIntervals(noClients, noQueues, simTime, maxATime, minATime, maxSTime, minSTime);
+        if(validIntervals){
+            this.setNumberOfClients(noClients);
+            this.setNumberOfServers(noQueues);
+            this.setTimeLimit(simTime);
+            this.setMaxServiceTime(maxSTime);
+            this.setMinServiceTime(minSTime);
+            this.setMaxArrivalTime(maxATime);
+            this.setMinArrivalTime(minATime);
+            this.generatedTasks = generateNRandomTasks();
+            if(selectionP.equals("SHORTEST TIME")){
+                selectionPolicy = SelectionPolicy.SHORTEST_TIME;
+                this.scheduler.changeStrategy(selectionPolicy);
+            } else if (selectionP.equals("SHORTEST QUEUE")) {
+                selectionPolicy = SelectionPolicy.SHORTEST_QUEUE;
+                this.scheduler.changeStrategy(selectionPolicy);
+            }
+            this.setStart(true);
+            Thread t = new Thread(this);
+            t.start();
+        }
+    }
+
+    public boolean validateIntervals(int noClients, int noQueues, int simTime, int maxATime, int minATime, int maxSTime, int minSTime) {
+        if(noClients < 0 || noQueues < 0 || simTime < 0 || maxATime < 0 || minATime < 0 || maxSTime < 0 || minSTime < 0) {
+            JOptionPane.showMessageDialog(null, "Please complete all the fields with valid numbers!");
+            return false;
+        }
+        else if(maxATime < minATime) {
+            JOptionPane.showMessageDialog(null, "Wrong input: maximum arrival time greater than minimum arrival time!");
+            return false;
+        }
+        else if(maxSTime < minSTime) {
+            JOptionPane.showMessageDialog(null, "Wrong input: maximum service time greater than minimum service time!");
+            return false;
+
+        }
+        else if(simTime < maxATime) {
+            JOptionPane.showMessageDialog(null, "Wrong input: maximum arrival time greater than simulation time!");
+            return false;
+        }
+        else if (simTime < maxSTime) {
+            JOptionPane.showMessageDialog(null, "Wrong input: maximum service time greater than simulation time!");
+            return false;
+        }
+        return true;
+    }
+
     public static void main(String[] args) {
         SimulationManager gen = new SimulationManager();
-        Thread t = new Thread(gen);
-        t.start();
+        //Thread t = new Thread(gen);
+        //t.start();
         System.out.println(gen);
     }
 
