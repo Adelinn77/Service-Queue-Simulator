@@ -146,7 +146,6 @@ public class SimulationSetUpFrame extends JFrame {
     }
 
     public void customizeStartButton(JButton startButton) {
-        //startButton.addActionListener(new ActionListener() {})
         startButton.setFont(new Font("Consolas", Font.BOLD, 24));
         startButton.setPreferredSize(new Dimension(400, 70));
         startButton.setBackground(new Color(0, 200, 0));

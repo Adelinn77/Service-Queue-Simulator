@@ -4,12 +4,14 @@ public class Task {
     private int ID;
     private int arrivalTime;
     private int serviceTime;
+    private int waitingTime;
 
     public Task() {}
     public Task(int ID, int arrivalTime, int serviceTime) {
         this.ID = ID;
         this.arrivalTime = arrivalTime;
         this.serviceTime = serviceTime;
+        this.waitingTime = 0;
     }
 
     public int getArrivalTime() {
@@ -38,6 +40,14 @@ public class Task {
 
     public boolean isPoisonPill() {
         return this.getID() == -1;
+    }
+
+    public int getWaitingTime() {
+        return waitingTime;
+    }
+
+    public void setWaitingTime(int waitingTime) {
+        this.waitingTime = waitingTime;
     }
 
     @Override

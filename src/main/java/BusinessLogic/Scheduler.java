@@ -11,11 +11,13 @@ public class Scheduler {
     private int maxNoServers;
     private int maxTasksPerServer;
     private Strategy strategy;
+    private float averageWaitingTime;
 
     public Scheduler(int maxNoServers, int maxTasksPerServer) {
         this.maxNoServers = maxNoServers;
         this.maxTasksPerServer = maxTasksPerServer;
         this.servers = new ArrayList<Server>();
+        this.averageWaitingTime = 0;
         for(int i = 0; i < maxNoServers; i++) {
             Server server = new Server();
             Thread thread = new Thread(server);
@@ -36,10 +38,19 @@ public class Scheduler {
 
     public void dispatchTask(Task t) {
         strategy.addTask(servers, t);
+        averageWaitingTime += t.getWaitingTime();
     }
 
     public  List<Server> getServers() {
         return servers;
+    }
+
+    public float getAverageWaitingTime() {
+        return averageWaitingTime;
+    }
+
+    public void setAverageWaitingTime(float averageWaitingTime) {
+        this.averageWaitingTime = averageWaitingTime;
     }
 
     public void stopAllServers() {

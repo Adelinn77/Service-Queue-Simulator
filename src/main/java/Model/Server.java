@@ -16,6 +16,7 @@ public class Server implements Runnable {
 
     public void addTask(Task task) {
         tasks.add(task);
+        task.setWaitingTime(waitingPeriod.get());
         waitingPeriod.getAndAdd(task.getServiceTime());
         System.out.println("Adăugat task " + task.getID() + " la server.");
     }

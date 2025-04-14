@@ -1,5 +1,6 @@
 package BusinessLogic;
 
+import GUI.LiveSimulationFrame;
 import GUI.SimulationSetUpFrame;
 import Model.Server;
 import Model.Task;
@@ -25,6 +26,7 @@ public class SimulationManager implements Runnable {
     private SelectionPolicy selectionPolicy = SelectionPolicy.SHORTEST_TIME;
     private Scheduler scheduler;
     private SimulationSetUpFrame frame;
+    private LiveSimulationFrame liveSimulationFrame;
     private List<Task> generatedTasks;
     private BufferedWriter logWriter;
     private boolean start = false;
@@ -39,6 +41,7 @@ public class SimulationManager implements Runnable {
         frame = new SimulationSetUpFrame(this,"Simulation Manager");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+
         //generatedTasks = generateNRandomTasks();
         setStart(false);
         //generatedTasks = generateExampleTasks();
@@ -106,7 +109,7 @@ public class SimulationManager implements Runnable {
                 log("Waiting clients: " + formatWaitingClients(generatedTasks));
 
                 int index = 1;
-                System.out.println(numberOfClients + " " + scheduler.getServers().size());
+                //System.out.println(numberOfClients + " " + scheduler.getServers().size());
                 for (Server server : scheduler.getServers()) {
                     BlockingQueue<Task> queue = server.getTasks();
                     if (queue.isEmpty()) {
@@ -117,6 +120,13 @@ public class SimulationManager implements Runnable {
                     index++;
                 }
                 log("");
+                List<BlockingQueue<Task>> liveQueues = new ArrayList<>();
+                for (Server s : scheduler.getServers()) {
+                    liveQueues.add(s.getTasks());
+                }
+                liveSimulationFrame.updateClock(currentTime);
+                liveSimulationFrame.updateQueuesDisplay(liveQueues);
+                liveSimulationFrame.updateWaitingClients(generatedTasks);
                 //frame.update(currentTime, scheduler.getServers(), generatedTasks);
 
                 currentTime++;
@@ -129,8 +139,12 @@ public class SimulationManager implements Runnable {
 
             }
             scheduler.stopAllServers();
+            scheduler.setAverageWaitingTime(scheduler.getAverageWaitingTime()/numberOfClients);
+            liveSimulationFrame.updateStatistics(scheduler.getAverageWaitingTime(), this.getAverageServiceTime(), this.getPeakHour());
+            liveSimulationFrame.showSimulationOverMessage();
             log("Average service time: " + this.getAverageServiceTime());
             log("Peak hour: " + this.getPeakHour());
+            log("Average waiting time: " + scheduler.getAverageWaitingTime());
             log("The simulation is finished when the simulation time is over.");
             try {
                 logWriter.close();
@@ -138,7 +152,7 @@ public class SimulationManager implements Runnable {
                 e.printStackTrace();
             }
             System.out.println("Simulation finished");
-            System.out.println("average service time: " + this.getAverageServiceTime() + "peak hour" + this.getPeakHour());
+            System.out.println("average service time: " + this.getAverageServiceTime() + " peak hour: " + this.getPeakHour() + " average waiting time: " + scheduler.getAverageWaitingTime());
         }
     }
 
@@ -228,6 +242,10 @@ public class SimulationManager implements Runnable {
         this.scheduler.changeStrategy(selectionPolicy);
     }
 
+    public Scheduler getScheduler() {
+        return scheduler;
+    }
+
     @Override
     public String toString() {
         return "SimulationManager{" +
@@ -268,7 +286,7 @@ public class SimulationManager implements Runnable {
         try {
             noClients = Integer.parseInt(frame.getNoClientsFieldText());
             noQueues = Integer.parseInt(frame.getNoQueuesFieldText());
-            System.out.println("hereeee" + noQueues);
+            //System.out.println("hereeee" + noQueues);
             simTime = Integer.parseInt(frame.getSimulationTimeFieldText());
             maxATime = Integer.parseInt(frame.getMaxArrivalTimeFieldText());
             minATime = Integer.parseInt(frame.getMinArrivalTimeFieldText());
@@ -283,7 +301,7 @@ public class SimulationManager implements Runnable {
         if(validIntervals){
             this.setNumberOfClients(noClients);
             this.setNumberOfServers(noQueues);
-            System.out.println("hereeeeeeee" + this.getNumberOfServers());
+            //System.out.println("hereeeeeeee" + this.getNumberOfServers());
             this.setTimeLimit(simTime);
             this.setMaxServiceTime(maxSTime);
             this.setMinServiceTime(minSTime);
@@ -299,6 +317,9 @@ public class SimulationManager implements Runnable {
                 selectionPolicy = SelectionPolicy.SHORTEST_QUEUE;
                 this.scheduler.changeStrategy(selectionPolicy);
             }
+            liveSimulationFrame = new LiveSimulationFrame(this,"Real-time simulation");
+            //liveSimulationFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            liveSimulationFrame.setVisible(true);
             this.setStart(true);
             Thread t = new Thread(this);
             t.start();
