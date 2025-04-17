@@ -18,7 +18,7 @@ public class Server implements Runnable {
         tasks.add(task);
         task.setWaitingTime(waitingPeriod.get());
         waitingPeriod.getAndAdd(task.getServiceTime());
-        System.out.println("Adăugat task " + task.getID() + " la server.");
+        //System.out.println("Adăugat task " + task.getID() + " la server.");
     }
 
     @Override
@@ -30,7 +30,7 @@ public class Server implements Runnable {
                     if(task.isPoisonPill()) {
                         break;
                     }
-                    System.out.println("Server a preluat task " + task.getID());
+                    //System.out.println("Server a preluat task " + task.getID());
                     int currentServiceTime = task.getServiceTime();
 
                     while (currentServiceTime > 0) {
